@@ -1,58 +1,77 @@
 'use strict';
 
+require('../server');
 var chai = require('chai');
 var chaihttp = require('chai-http');
 var fs = require('fs');
-var server = require('../server.js');
+var expect = chai.expect;
 
 chai.use(chaihttp);
 
-var expect = chai.expect;
+describe('The server', function() {
+  beforeEach(function(){
+    fs.writeFileSync('./db/file1.json', '{ "name": "Bilbo", "age": "999" }\n');
+  });
 
-describe('GET request', function() {
-  it('should return a JSON body', function(done) {
-    chai.request('localhost:3000').
-      get("/").
-      end(function(err, res) {
+  after(function(){
+    try{
+      fs.unlinkSync("./db/file2.json");
+    } catch(err) {}
+  });
+
+  it('should GET ', function(done) {
+    chai.request('localhost:3000')
+      .get('/file1.json')
+      .end(function(err, res) {
         expect(err).to.eql(null);
-        expect(res.body).to.eql({ name: 'Bilbo', age: '999' });
+        expect(res).to.have.status(200);
+        expect(res.text).to.eql('{ "name": "Bilbo", "age": "999" }\n');
+        done();
+      });
+  });
+
+  it('should PUT ', function(done) {
+    chai.request('localhost:3000')
+      .put('/file1.json')
+      .send({"PUT": "did this"})
+      .end(function(err, res) {
+        expect(err).to.eql(null);
+        expect(res).to.have.status(200);
+        done();
+      });
+  });
+
+  it('should POST ', function(done) {
+    chai.request('localhost:3000')
+      .post('/file2.json')
+      .send({"POST": "did this"})
+      .end(function(err, res) {
+        expect(err).to.eql(null);
+        expect(res).to.have.status(200);
+        done();
+      });
+  });
+
+  it('should PATCH ', function(done) {
+    chai.request('localhost:3000')
+      .patch('/file2.json')
+      .send({"PATCH": "did this"})
+      .end(function(err, res) {
+        expect(err).to.eql(null);
+        expect(res).to.have.status(200);
+        done();
+      });
+  });
+
+
+  it('should DELETE ', function(done) {
+    chai.request('localhost:3000')
+      .del('/file1.json')
+      .end(function(err, res) {
+        // expect(err).to.eql(null);
+        // expect(res).to.have.status(200);
+        // expect(fs.readFileSync('./db/file1.json')).not.to.exist();
         done();
       });
   });
 });
-
-// This Test works but is having a problem
-describe('DELETE request', function() {
-  before(function(){
-    fs.writeFileSync('./db/mochaChaiTestFile.json', 'I am a test file');
-  });
-
-  it('should delete the specified file', function(done) {
-    chai.request('localhost:3000')
-    .delete('/mochaChaiTestFile.json')
-    .end(function(err) {
-      // expect(err).to.eql(null);
-      // expect(fs.existsSync('./db/mochaChaiTestFile.json')).to.eql(false);
-      done();
-    });
-  });
-});
-
-
-
-// this may be total BUNK
-describe('POST request', function() {
-  it('should responds to a post request', function(done) {
-    chai.request('localhost:3000')
-    .post('./test/db/test_file.json')
-    .end({hello: 'world'})
-    .end(function(err, res) {
-      expect(err).to.eql(null);
-      expect(res.body.msg).to.eql('this was added on the server');
-      done();
-    });
-  });
-});
-
-
-

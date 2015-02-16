@@ -23,8 +23,8 @@ router.GET = function(req, res, fileName) {
   });
 
   try {
-    content = fs.readFileSync('./db/' + fileName);
-    res.write(content);
+      content = fs.readFileSync('./db/' + fileName);
+      res.write(content);
   } catch(err) {
     console.log('Error: ' + err);
   }
